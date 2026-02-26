@@ -463,6 +463,44 @@ HtmlDestroySelect(select);
 - tidy機能追加、未実装だが beta1.0 で既にあったが。。。
 - libcurl ストリーミングパースの追加 (スレッド)
 
+**myhtml 3.0**
+
+C++ にアップグレードするつもりで、新しいバージョンはこのように
+
+```cpp
+#include <curl/curl.h>        // libcurl の拡張機能を使用するには myhtml.h 前に定義する必要がある
+#include "myhtml.h"
+
+int main(int argc, char** argv) {
+  // == libcurl 初期化 ==
+  CURL* curl = curl_easy_init();
+
+  // == https://example.com からHTML を取得する ==
+  html_t doc(curl, "http://example.com");
+
+  // html_t doc("<p>hello world</p>")
+  // または html_t doc = html_read("index.html")
+
+  // == 検索実例1: <title></title> ==
+  html_t tag_title = doc.find(doc, "title");
+  std::cout << "title: " << tag_title.get_inner_text() << "\n";
+
+  // == 検索実例2: body プリント ==
+  html_t tag_body = doc.find("body[-1]" /* インデックス -1 に設定することで逆方向の検索ができます */);
+
+  // GetObjectInnerText() と違って、GetObjectText() は子オブジェクトのテキストも含めたゲットなので新しいバッファが必要
+  std::cout << "text:\n"
+    << tag_body.get_text() << "\n";
+
+  // == (オプション) HTML 出力 ==
+  doc.write("output.html");
+
+  // libcurl クリーンアップ ==
+  curl_easy_cleanup(curl);
+  return 0;
+}
+```
+
 ---
 
 ## ライブラリ歴史
